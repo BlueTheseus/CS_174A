@@ -164,10 +164,6 @@ custom_cube_geometry.setAttribute('position', new THREE.BufferAttribute(position
 custom_cube_geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
 custom_cube_geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
 
-// draw the cube
-let cube = new THREE.Mesh( custom_cube_geometry, phong_material );
-scene.add(cube);
-
 // TODO: Implement wireframe geometry
 const wireframe_vertices = new Float32Array([
 	// Front face
@@ -192,6 +188,12 @@ const wireframe_vertices = new Float32Array([
 const wireframe_geometry = new THREE.BufferGeometry();
 wireframe_geometry.setAttribute( 'position', new THREE.BufferAttribute(wireframe_vertices,3) );
 const line = new THREE.LineSegments( wireframe_geometry );
+
+// draw the cube
+let cube = new THREE.Mesh( custom_cube_geometry, phong_material );
+//scene.add(cube);
+//scene.add(line);
+
 
 function translationMatrix(tx, ty, tz) {
 	return new THREE.Matrix4().set(
@@ -229,6 +231,15 @@ for (let i = 0; i < 7; i++) {
 	scene.add(cube);
 }
 
+let cubes_wireframe = [];
+for (let i = 0; i < 7; i++) {
+	let wireframe = new THREE.LineSegments(wireframe_geometry);
+	wireframe.matrixAutoUpdate = false;
+	wireframe.visible = false;
+	cubes_wireframe.push(wireframe);
+	scene.add(wireframe);
+}
+
 // Transform cubes
 const delta_theta = (15/360)*2*Math.PI;
 const scale_factor = 1; // TODO exercise 3: make the cubes taller using the scaling matrix transform. Make sure that the faces of the cuboid are still perpendicular to each other.
@@ -246,6 +257,7 @@ const scaling = scalingMatrix(1, scale_factor, 1);
 let model_transformation = new THREE.Matrix4();
 for (let i = 0; i < cubes.length; i++) {
 	cubes[i].matrix.copy(model_transformation);
+	cubes_wireframe[i].matrix.copy(model_transformation);
 	model_transformation.multiplyMatrices(scaling, model_transformation);
 	model_transformation.multiplyMatrices(translation, model_transformation);
 	model_transformation.multiplyMatrices(rotation_matrix, model_transformation);
@@ -263,12 +275,19 @@ const MAX_ANGLE = 15 * 2*Math.PI/360; // 15 degrees converted to radians
 const T = 3; // oscillation period in seconds
 
 let still = false;
+let visible = true;
 
 window.addEventListener('keydown', onKeyPress); // onKeyPress is called each time a key is pressed
 function onKeyPress(event) { // function to handle keypress
 	switch (event.key) {
 		case 's':
 			still = !still;
+			break;
+		case 'w':
+			for (let i = 0; i < 7; i++) {
+				cubes[i].visible = !cubes[i].visible;
+				cubes_wireframe[i].visible = !cubes_wireframe[i].visible;
+			}
 			break;
 		default:
 			console.log(`Key ${event.key} pressed`);
@@ -303,6 +322,7 @@ function animate() {
 	let model_transformation = new THREE.Matrix4();
 	for (let i = 0; i < cubes.length; i++) {
 		cubes[i].matrix.copy(model_transformation);
+		cubes_wireframe[i].matrix.copy(model_transformation);
 		model_transformation.multiplyMatrices(scaling, model_transformation);
 		model_transformation.multiplyMatrices(translation, model_transformation);
 		model_transformation.multiplyMatrices(rotation, model_transformation);
