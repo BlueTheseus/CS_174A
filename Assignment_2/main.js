@@ -164,25 +164,70 @@ custom_cube_geometry.setAttribute('position', new THREE.BufferAttribute(position
 custom_cube_geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
 custom_cube_geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
 
-// TODO: Implement wireframe geometry
+// Implement wireframe geometry
 const wireframe_vertices = new Float32Array([
+	/* Note: Many duplicate segments are commented out for optimization but
+	 * included as comments for completeness. */
+
 	// Front face
-	-l, -l,  l,
+	-l, -l,  l, // bottom front left -> bottom front right
 	 l, -l,  l,
-	 l, -l,  l,
+	 l, -l,  l, // bottom front right -> top front right
 	 l,  l,  l,
-	 l,  l,  l,
+	 l,  l,  l, // top front right -> top front left
 	-l,  l,  l,
-	-l,  l,  l,
+	-l,  l,  l, // top front left -> bottom front left
 	-l, -l,  l,
 	
 	// Top face
-	-l,  l, -l,
+	-l,  l, -l, // top back left -> top front left
 	-l,  l,  l,
-	-l,  l,  l,
-	 l,  l,  l,
-	 l,  l,  l,
+	//-l,  l,  l, // top front left -> top front right
+	// l,  l,  l,
+	 l,  l,  l, // top front right -> top back right
 	 l,  l, -l,
+	 l,  l, -l, // top back right -> top back left
+	-l,  l, -l,
+
+	// Left face
+	-l, -l, -l, // bottom back left -> bottom front left
+	-l, -l,  l,
+	//-l,  l,  l, // bottom front left -> top front left
+	//-l,  l,  l,
+	//-l,  l,  l, // top front left -> top back left
+	//-l,  l, -l,
+	-l,  l, -l, // top back left -> bottom back left
+	-l, -l, -l,
+
+	// Right face
+	 l, -l, -l, // bottom back right -> bottom front right
+	 l, -l,  l,
+	// l,  l,  l, // bottom front right -> top front right
+	// l,  l,  l,
+	// l,  l,  l, // top front right -> top back right
+	// l,  l, -l,
+	 l,  l, -l, // top back right -> bottom back right
+	 l, -l, -l,
+
+	// Bottom face
+	//-l, -l, -l, // bottom back left -> bottom front left
+	//-l, -l,  l,
+	//-l, -l,  l, // bottom front left -> bottom front right
+	// l, -l,  l,
+	// l, -l,  l, // bottom front right -> bottom back right
+	// l, -l, -l,
+	 l, -l, -l, // bottom back right -> bottom back left
+	-l, -l, -l,
+
+	// Back face
+	//-l, -l, -l, // bottom back left -> bottom back right
+	// l, -l, -l,
+	// l, -l, -l, // bottom back right -> top back right
+	// l,  l, -l,
+	// l,  l, -l, // top back right -> top back left
+	//-l,  l, -l,
+	//-l,  l, -l, // top back left -> bottom back left
+	//-l, -l, -l,
 ]);
 
 const wireframe_geometry = new THREE.BufferGeometry();
