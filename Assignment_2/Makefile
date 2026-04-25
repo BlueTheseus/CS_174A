@@ -1,7 +1,9 @@
-run:
+install:
 	npm init -y
 	npm install --save three
 	npm install --save-dev vite
+
+run:
 	npx vite
 
 nix-run:
