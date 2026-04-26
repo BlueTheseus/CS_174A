@@ -236,9 +236,17 @@ const line = new THREE.LineSegments( wireframe_geometry );
 
 // draw the cube
 let cube = new THREE.Mesh( custom_cube_geometry, phong_material );
-//scene.add(cube);
-//scene.add(line);
 
+
+const scale_factor = 1.5;
+function scalingMatrix(sx, sy, sz) {
+	return new THREE.Matrix4().set(
+		sx,  0,  0, 0,
+		 0, sy,  0, 0,
+		 0,  0, sz, 0,
+		 0,  0,  0, 1,
+	)
+}
 
 function translationMatrix(tx, ty, tz) {
 	return new THREE.Matrix4().set(
@@ -258,52 +266,43 @@ function rotationMatrixZ(theta) {
 	);
 }
 
-function scalingMatrix(sx, sy, sz) {
-	return new THREE.Matrix4().set(
-		sx,  0,  0, 0,
-		 0, sy,  0, 0,
-		 0,  0, sz, 0,
-		 0,  0,  0, 1,
-	)
-}
+// Scale the cubes
+let model_transformation = new THREE.Matrix4();
+const scaling = scalingMatrix(1, scale_factor, 1);
+model_transformation.multiplyMatrices(scaling, model_transformation);
 
-
+// Create cubes
 let cubes = [];
 for (let i = 0; i < 7; i++) {
 	let cube = new THREE.Mesh(custom_cube_geometry, phong_material);
 	cube.matrixAutoUpdate = false;
+	cube.matrix.copy(model_transformation); // scales cubes
 	cubes.push(cube);
 	scene.add(cube);
 }
 
+// Create wireframes
 let cubes_wireframe = [];
 for (let i = 0; i < 7; i++) {
 	let wireframe = new THREE.LineSegments(wireframe_geometry);
 	wireframe.matrixAutoUpdate = false;
 	wireframe.visible = false;
+	wireframe.matrix.copy(model_transformation); // scales cubes
 	cubes_wireframe.push(wireframe);
 	scene.add(wireframe);
 }
 
-// Transform cubes
+// Transform and rotate cubes
 const delta_theta = (15/360)*2*Math.PI;
-const scale_factor = 1; // TODO exercise 3: make the cubes taller using the scaling matrix transform. Make sure that the faces of the cuboid are still perpendicular to each other.
-
-const translation = translationMatrix(l, l, 0);
-
+const translation = translationMatrix(l, l*scale_factor, 0);
 const rotation_matrix = rotationMatrixZ(delta_theta*l);
+const inverse_translation = translationMatrix(-l, -l*scale_factor, 0);
+//const final_translation = translationMatrix(0, 2*l+(scale_factor-0.5)*l, 0);
+const final_translation = translationMatrix(0, 2*l+(scale_factor-0.5)*l, 0);
 
-const inverse_translation = translationMatrix(-l, -l, 0);
-
-const final_translation = translationMatrix(0, 2*l, 0);
-
-const scaling = scalingMatrix(1, scale_factor, 1);
-
-let model_transformation = new THREE.Matrix4();
 for (let i = 0; i < cubes.length; i++) {
 	cubes[i].matrix.copy(model_transformation);
 	cubes_wireframe[i].matrix.copy(model_transformation);
-	model_transformation.multiplyMatrices(scaling, model_transformation);
 	model_transformation.multiplyMatrices(translation, model_transformation);
 	model_transformation.multiplyMatrices(rotation_matrix, model_transformation);
 	model_transformation.multiplyMatrices(inverse_translation, model_transformation);
@@ -319,6 +318,48 @@ const clock = new THREE.Clock();
 const MAX_ANGLE = 15 * 2*Math.PI/360; // 15 degrees converted to radians
 const T = 3; // oscillation period in seconds
 
+
+function animate() {
+    
+	renderer.render( scene, camera );
+    controls.update();
+
+	///*
+	delta_animation_time = clock.getDelta();
+	if (!still) {
+		animation_time += delta_animation_time;
+		rotation_angle = Math.abs(Math.sin((Math.PI/T)*animation_time));
+	};
+
+	const rotation = rotationMatrixZ(rotation_angle*l);
+
+	const scale_factor = 1.5; // TODO exercise 3: make the cubes taller using the scaling matrix transform. Make sure that the faces of the cuboid are still perpendicular to each other.
+
+	const translation = translationMatrix(l, l*scale_factor, 0);
+
+	//const rotation = rotationMatrixZ(delta_theta*l);
+
+	const inverse_translation = translationMatrix(-l, -l*scale_factor, 0);
+
+	const final_translation = translationMatrix(0, 2*l+(scale_factor-1)*l, 0);
+
+	const scaling = scalingMatrix(1, scale_factor, 1);
+
+	let model_transformation = new THREE.Matrix4();
+	for (let i = 0; i < cubes.length; i++) {
+		cubes[i].matrix.copy(model_transformation);
+		cubes_wireframe[i].matrix.copy(model_transformation);
+		//model_transformation.multiplyMatrices(scaling, model_transformation);
+		model_transformation.multiplyMatrices(translation, model_transformation);
+		model_transformation.multiplyMatrices(rotation, model_transformation);
+		model_transformation.multiplyMatrices(inverse_translation, model_transformation);
+		model_transformation.multiplyMatrices(final_translation, model_transformation);
+	}
+	//*/
+}
+renderer.setAnimationLoop( animate );
+
+// Event Listener
 let still = false;
 let visible = true;
 
@@ -338,43 +379,3 @@ function onKeyPress(event) { // function to handle keypress
 			console.log(`Key ${event.key} pressed`);
 	}
 }
-
-function animate() {
-    
-	renderer.render( scene, camera );
-    controls.update();
-
-	delta_animation_time = clock.getDelta();
-	if (!still) {
-		animation_time += delta_animation_time;
-		rotation_angle = Math.abs(Math.sin((Math.PI/T)*animation_time));
-	};
-
-	const rotation = rotationMatrixZ(rotation_angle*l);
-
-	const scale_factor = 1; // TODO exercise 3: make the cubes taller using the scaling matrix transform. Make sure that the faces of the cuboid are still perpendicular to each other.
-
-	const translation = translationMatrix(l, l, 0);
-
-	//const rotation = rotationMatrixZ(delta_theta*l);
-
-	const inverse_translation = translationMatrix(-l, -l, 0);
-
-	const final_translation = translationMatrix(0, 2*l, 0);
-
-	const scaling = scalingMatrix(1, scale_factor, 1);
-
-	let model_transformation = new THREE.Matrix4();
-	for (let i = 0; i < cubes.length; i++) {
-		cubes[i].matrix.copy(model_transformation);
-		cubes_wireframe[i].matrix.copy(model_transformation);
-		model_transformation.multiplyMatrices(scaling, model_transformation);
-		model_transformation.multiplyMatrices(translation, model_transformation);
-		model_transformation.multiplyMatrices(rotation, model_transformation);
-		model_transformation.multiplyMatrices(inverse_translation, model_transformation);
-		model_transformation.multiplyMatrices(final_translation, model_transformation);
-	}
-}
-renderer.setAnimationLoop( animate );
-
-// TODO: Add event listener
