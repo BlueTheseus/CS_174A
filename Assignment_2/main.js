@@ -297,7 +297,6 @@ const delta_theta = (15/360)*2*Math.PI;
 const translation = translationMatrix(l, l*scale_factor, 0);
 const rotation_matrix = rotationMatrixZ(delta_theta*l);
 const inverse_translation = translationMatrix(-l, -l*scale_factor, 0);
-//const final_translation = translationMatrix(0, 2*l+(scale_factor-0.5)*l, 0);
 const final_translation = translationMatrix(0, 2*l+(scale_factor-0.5)*l, 0);
 
 for (let i = 0; i < cubes.length; i++) {
@@ -311,7 +310,7 @@ for (let i = 0; i < cubes.length; i++) {
 
 
 let animation_time = 0;
-let delta_animation_time;
+let delta_animation_time = 0;
 let rotation_angle;
 const clock = new THREE.Clock();
 
@@ -324,38 +323,34 @@ function animate() {
 	renderer.render( scene, camera );
     controls.update();
 
-	///*
 	delta_animation_time = clock.getDelta();
 	if (!still) {
 		animation_time += delta_animation_time;
 		rotation_angle = Math.abs(Math.sin((Math.PI/T)*animation_time));
 	};
 
-	const rotation = rotationMatrixZ(rotation_angle*l);
+	let model_transformation = new THREE.Matrix4();
 
-	const scale_factor = 1.5; // TODO exercise 3: make the cubes taller using the scaling matrix transform. Make sure that the faces of the cuboid are still perpendicular to each other.
+	const scale_factor = 1.5;
+	const scaling = scalingMatrix(1, scale_factor, 1);
+	model_transformation.multiplyMatrices(scaling, model_transformation);
 
 	const translation = translationMatrix(l, l*scale_factor, 0);
 
-	//const rotation = rotationMatrixZ(delta_theta*l);
+	const rotation = rotationMatrixZ(rotation_angle*l);
 
 	const inverse_translation = translationMatrix(-l, -l*scale_factor, 0);
 
-	const final_translation = translationMatrix(0, 2*l+(scale_factor-1)*l, 0);
+	const final_translation = translationMatrix(0, 2*l+(scale_factor-0.5)*l, 0);
 
-	const scaling = scalingMatrix(1, scale_factor, 1);
-
-	let model_transformation = new THREE.Matrix4();
 	for (let i = 0; i < cubes.length; i++) {
 		cubes[i].matrix.copy(model_transformation);
 		cubes_wireframe[i].matrix.copy(model_transformation);
-		//model_transformation.multiplyMatrices(scaling, model_transformation);
 		model_transformation.multiplyMatrices(translation, model_transformation);
 		model_transformation.multiplyMatrices(rotation, model_transformation);
 		model_transformation.multiplyMatrices(inverse_translation, model_transformation);
 		model_transformation.multiplyMatrices(final_translation, model_transformation);
 	}
-	//*/
 }
 renderer.setAnimationLoop( animate );
 
